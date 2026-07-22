@@ -1,0 +1,209 @@
+<!--
+  HIKE LISTING WIDGET
+  Drop this in place of the static "This week's hike" placeholder in
+  TrailShrinks.com's index.html (or anywhere you want live events shown).
+  Pulls from the shared JobCreation.us events API - requires CORS to be
+  enabled on that API for the trailshrinks.com origin.
+
+  Photo is required to RSVP (enforced server-side in rsvp.js too, not just
+  here) and every event shows a gallery of attendee photos underneath.
+-->
+
+<div id="hike-listings">Loading upcoming hikes…</div>
+
+<style>
+  .hike-card {
+    background: #ffffff; border: 1px solid #dcd6c4; border-left: 6px solid #046031;
+    border-radius: 3px; padding: 22px; margin-bottom: 16px;
+  }
+  .hike-card h3 { margin: 0 0 6px; font-size: 18px; color: #023d1f; font-family: 'Oswald', sans-serif; text-transform: none; }
+  .hike-card .when-where { font-size: 13px; color: #5a6459; margin-bottom: 14px; }
+  .hike-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hike-btn {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700;
+    text-decoration: none; padding: 10px 16px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .hike-btn.directions { background: #046031; color: #f7f4ea; }
+  .hike-btn.call { background: transparent; color: #023d1f; border: 1px solid #023d1f; }
+  .hike-empty { font-size: 14px; color: #5a6459; font-family: sans-serif; }
+  .rsvp-box { margin-top: 16px; padding-top: 16px; border-top: 1px solid #dcd6c4; }
+  .rsvp-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .rsvp-row input { flex: 1; padding: 9px; border: 1px solid #dcd6c4; border-radius: 3px; font-size: 13px; }
+  .photo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .photo-preview { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid #dcd6c4; display: none; }
+  .photo-required-note { font-size: 11px; color: #c1531f; font-family: sans-serif; }
+  .sweep-label { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #5a6459; margin-bottom: 12px; font-family: sans-serif; }
+  .sweep-label input { width: auto; margin-top: 2px; }
+  .rsvp-submit { border: none; cursor: pointer; }
+  .rsvp-result { margin-top: 8px; font-size: 12px; color: #023d1f; font-family: sans-serif; }
+  .gallery-label { font-size: 12px; color: #5a6459; font-family: sans-serif; margin: 14px 0 8px; }
+  .gallery-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .gallery-grid img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 0 0 1px #dcd6c4; }
+  .gallery-grid .sweep-badge { position: relative; }
+  .gallery-grid .sweep-badge::after { content: "\1F9F9"; position: absolute; bottom: -2px; right: -2px; font-size: 12px; }
+</style>
+
+<script>
+(async function () {
+  const container = document.getElementById('hike-listings');
+  const EVENTS_API = 'https://jobcreation.us/api/events';
+
+  function directionsUrl(evt) {
+    if (evt.meeting_lat && evt.meeting_lng) {
+      return `https://www.google.com/maps/dir/?api=1&destination=${evt.meeting_lat},${evt.meeting_lng}`;
+    }
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.meeting_address || evt.city || '')}`;
+  }
+
+  function telUrl(phone) {
+    return `tel:${(phone || '').replace(/[^0-9+]/g, '')}`;
+  }
+
+  try {
+    const res = await fetch(EVENTS_API);
+    const data = await res.json();
+    const hikes = (data.items || []).filter(e => e.type === 'hike');
+
+    if (!hikes.length) {
+      container.innerHTML = '<p class="hike-empty">No hikes scheduled right now — check back soon.</p>';
+      return;
+    }
+
+    container.innerHTML = hikes.map(evt => `
+      <div class="hike-card" data-event-id="${evt.id}">
+        <h3>${evt.title}</h3>
+        <div class="when-where">${evt.event_date || 'Date TBD'} · ${evt.city || ''}${evt.meeting_address ? ' — ' + evt.meeting_address : ''}</div>
+        ${evt.description ? `<p style="font-size:13px; color:#5a6459; margin:0 0 14px;">${evt.description}</p>` : ''}
+        <div class="hike-actions">
+          <a class="hike-btn directions" href="${directionsUrl(evt)}" target="_blank" rel="noopener">Get directions</a>
+          ${evt.organizer_phone ? `<a class="hike-btn call" href="${telUrl(evt.organizer_phone)}">Call organizer: ${evt.organizer_phone}</a>` : ''}
+        </div>
+        <div class="rsvp-box">
+          <div class="rsvp-row">
+            <input type="text" placeholder="Your name" class="rsvp-name">
+            <input type="email" placeholder="Your email" class="rsvp-email">
+          </div>
+          <div class="photo-row">
+            <input type="file" accept="image/*" capture="user" class="rsvp-photo">
+            <img class="photo-preview">
+          </div>
+          <div class="photo-required-note">A photo is required to RSVP — no photo, no attendance.</div>
+          <label class="sweep-label" style="margin-top:10px;">
+            <input type="checkbox" class="rsvp-sweep">
+            I'll sweep this hike (last one on the trail, makes sure no one's left behind) — 15% off the event fee
+          </label>
+          <button class="hike-btn directions rsvp-submit" onclick="submitRsvp(${evt.id}, this)">RSVP${evt.fee_amount ? ` · $${evt.fee_amount.toFixed(2)}` : ' · Free'}</button>
+          <div class="rsvp-result"></div>
+        </div>
+        <div class="gallery-label">Who's attending</div>
+        <div class="gallery-grid" id="gallery-${evt.id}">Loading…</div>
+      </div>
+    `).join('');
+
+    hikes.forEach(evt => loadGallery(evt.id));
+  } catch (err) {
+    container.innerHTML = '<p class="hike-empty">Couldn\'t load hikes right now — try refreshing.</p>';
+  }
+})();
+
+async function loadGallery(eventId) {
+  const galleryEl = document.getElementById(`gallery-${eventId}`);
+  try {
+    const res = await fetch(`https://jobcreation.us/api/event-photos?eventId=${eventId}`);
+    const data = await res.json();
+    const items = data.items || [];
+    if (!items.length) {
+      galleryEl.innerHTML = '<span style="font-size:12px;color:#5a6459;font-family:sans-serif;">No one\'s RSVP\'d yet — be the first.</span>';
+      return;
+    }
+    galleryEl.innerHTML = items.map(p => `
+      <div class="${p.isSweep ? 'sweep-badge' : ''}" title="${p.name}${p.isSweep ? ' (sweep)' : ''}">
+        <img src="${p.photoUrl}" alt="${p.name}">
+      </div>
+    `).join('');
+  } catch (err) {
+    galleryEl.innerHTML = '';
+  }
+}
+
+// Resize/compress the photo client-side before sending, so uploads stay small.
+function readAndResizePhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 480;
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function submitRsvp(eventId, btn) {
+  const card = btn.closest('.hike-card');
+  const name = card.querySelector('.rsvp-name').value.trim();
+  const email = card.querySelector('.rsvp-email').value.trim();
+  const isSweep = card.querySelector('.rsvp-sweep').checked;
+  const photoInput = card.querySelector('.rsvp-photo');
+  const resultEl = card.querySelector('.rsvp-result');
+
+  if (!name || !email) {
+    resultEl.textContent = 'Enter your name and email first.';
+    return;
+  }
+  if (!photoInput.files || !photoInput.files[0]) {
+    resultEl.textContent = 'A photo is required to RSVP — no photo, no attendance.';
+    return;
+  }
+
+  resultEl.textContent = 'Uploading…';
+  let photo;
+  try {
+    photo = await readAndResizePhoto(photoInput.files[0]);
+  } catch (err) {
+    resultEl.textContent = 'Could not read that photo — try another.';
+    return;
+  }
+
+  try {
+    const res = await fetch('https://jobcreation.us/api/rsvp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId, name, email, isSweep, photo }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      resultEl.textContent = data.error || 'Something went wrong.';
+      return;
+    }
+    if (data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    resultEl.textContent = isSweep
+      ? "You're in — thanks for sweeping. Broom count updated on your profile."
+      : "You're in — see you on the trail.";
+    loadGallery(eventId);
+  } catch (err) {
+    resultEl.textContent = 'Network error — try again.';
+  }
+}
+
+document.addEventListener('change', (e) => {
+  if (e.target.classList.contains('rsvp-photo') && e.target.files[0]) {
+    const preview = e.target.closest('.photo-row').querySelector('.photo-preview');
+    preview.src = URL.createObjectURL(e.target.files[0]);
+    preview.style.display = 'block';
+  }
+});
+</script>

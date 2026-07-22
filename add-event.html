@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JobCreation.us — Add event</title>
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 560px; margin: 40px auto; padding: 0 20px; color: #16324f; }
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; margin-top: 40px; }
+  label { display: block; margin-top: 14px; font-size: 13px; color: #5c7385; }
+  input, select, textarea { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #c7d6de; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  button { margin-top: 20px; padding: 12px 20px; background: #16324f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+  button:hover { background: #b3502c; }
+  .msg { margin-top: 16px; padding: 12px; border-radius: 4px; font-size: 14px; }
+  .msg.ok { background: #e1f5ee; color: #085041; }
+  .msg.err { background: #fcebeb; color: #791f1f; }
+  .hint { font-size: 12px; color: #5c7385; margin-top: 4px; }
+  #endDateRow { display: none; }
+  .past-card { border: 1px solid #c7d6de; border-radius: 4px; padding: 14px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .past-card .info { font-size: 13px; }
+  .past-card .info strong { display: block; font-size: 14px; }
+  .repeat-btn { margin: 0; padding: 8px 14px; font-size: 12px; white-space: nowrap; }
+  .load-more { background: transparent; color: #16324f; border: 1px solid #16324f; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>Add an event</h1>
+<p style="font-size:13px;color:#5c7385;">Leave the fee at 0 for free events. Use "Trip" for multi-day travel.</p>
+
+<label>Admin password</label>
+<input type="password" id="password" onchange="loadPastEvents()">
+
+<label>Event type</label>
+<select id="type" onchange="toggleEndDate()">
+  <option value="hike">Hike (TrailShrinks, local)</option>
+  <option value="trip">Trip (multi-day, domestic or international)</option>
+  <option value="gala">Gala (HikersBall)</option>
+  <option value="training">Training (RooferSchool)</option>
+</select>
+
+<label>Title</label>
+<input type="text" id="title" placeholder="e.g. TrailShrinks — Ramapo Mountains hike">
+
+<div class="row">
+  <div>
+    <label>City / destination</label>
+    <input type="text" id="city">
+  </div>
+  <div>
+    <label id="startLabel">Date</label>
+    <input type="date" id="eventDate">
+  </div>
+</div>
+
+<div class="row" id="endDateRow">
+  <div>
+    <label>End date</label>
+    <input type="date" id="endDate">
+  </div>
+  <div></div>
+</div>
+
+<label>Organizer phone number <span style="color:#b3502c;">*required</span></label>
+<input type="tel" id="organizerPhone" placeholder="e.g. 732-995-3914">
+<div class="hint">Shown on the listing and sent in the RSVP confirmation, so hikers can call if they get lost.</div>
+
+<label>Meeting point address <span style="color:#b3502c;">*required</span></label>
+<input type="text" id="meetingAddress" placeholder="e.g. Ramapo Reservation main lot, Mahwah, NJ">
+<div class="hint">Powers the "Get directions" button. Be exact — the specific lot or trailhead, not just the town.</div>
+
+<div class="row">
+  <div>
+    <label>Meeting point latitude (optional)</label>
+    <input type="text" id="meetingLat">
+  </div>
+  <div>
+    <label>Meeting point longitude (optional)</label>
+    <input type="text" id="meetingLng">
+  </div>
+</div>
+
+<div class="row">
+  <div>
+    <label>Fee ($, 0 if free)</label>
+    <input type="number" id="feeAmount" step="0.01" value="0">
+  </div>
+  <div>
+    <label>Fair market value of what's provided ($)</label>
+    <input type="number" id="fairMarketValue" step="0.01" value="0">
+  </div>
+</div>
+
+<label>Description</label>
+<textarea id="description" rows="3"></textarea>
+
+<button onclick="createEvent()">Add event</button>
+<div id="result"></div>
+
+<h2>Past hikes — repeat with a new date</h2>
+<p style="font-size:13px;color:#5c7385;">Enter your password above to load these. Click "Repeat" to copy everything into the form above — just set the new date and hit "Add event."</p>
+<div id="pastEvents"></div>
+<button class="load-more" id="loadMoreBtn" style="display:none;" onclick="loadPastEvents(true)">Load more</button>
+
+<script>
+let pastOffset = 0;
+const PAST_PAGE_SIZE = 10;
+
+function toggleEndDate() {
+  const type = document.getElementById('type').value;
+  const showRange = type === 'trip' || type === 'training';
+  document.getElementById('endDateRow').style.display = showRange ? 'flex' : 'none';
+  document.getElementById('startLabel').textContent = showRange ? 'Start date' : 'Date';
+}
+
+async function createEvent() {
+  const password = document.getElementById('password').value;
+  const body = {
+    type: document.getElementById('type').value,
+    title: document.getElementById('title').value,
+    city: document.getElementById('city').value,
+    eventDate: document.getElementById('eventDate').value,
+    endDate: document.getElementById('endDate').value,
+    organizerPhone: document.getElementById('organizerPhone').value,
+    meetingAddress: document.getElementById('meetingAddress').value,
+    meetingLat: document.getElementById('meetingLat').value,
+    meetingLng: document.getElementById('meetingLng').value,
+    feeAmount: document.getElementById('feeAmount').value,
+    fairMarketValue: document.getElementById('fairMarketValue').value,
+    description: document.getElementById('description').value,
+  };
+  const resultEl = document.getElementById('result');
+  resultEl.innerHTML = '';
+  try {
+    const res = await fetch('/api/admin/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      resultEl.innerHTML = `<div class="msg err">${data.error || 'Something went wrong'}</div>`;
+      return;
+    }
+    resultEl.innerHTML = '<div class="msg ok">Event added — it will now show on the homepage.</div>';
+    loadPastEvents();
+  } catch (err) {
+    resultEl.innerHTML = '<div class="msg err">Network error - try again.</div>';
+  }
+}
+
+function repeatEvent(evt) {
+  document.getElementById('type').value = evt.type;
+  toggleEndDate();
+  document.getElementById('title').value = evt.title || '';
+  document.getElementById('city').value = evt.city || '';
+  document.getElementById('eventDate').value = '';
+  document.getElementById('endDate').value = '';
+  document.getElementById('organizerPhone').value = evt.organizer_phone || '';
+  document.getElementById('meetingAddress').value = evt.meeting_address || '';
+  document.getElementById('meetingLat').value = evt.meeting_lat || '';
+  document.getElementById('meetingLng').value = evt.meeting_lng || '';
+  document.getElementById('feeAmount').value = evt.fee_amount || 0;
+  document.getElementById('fairMarketValue').value = evt.fair_market_value || 0;
+  document.getElementById('description').value = evt.description || '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function loadPastEvents(loadMore) {
+  const password = document.getElementById('password').value;
+  if (!password) return;
+  if (!loadMore) pastOffset = 0;
+
+  try {
+    const res = await fetch('/api/admin/events?password=' + encodeURIComponent(password));
+    const data = await res.json();
+    if (!res.ok) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const past = (data.items || []).filter(e => e.event_date && e.event_date < today);
+    const container = document.getElementById('pastEvents');
+    const slice = past.slice(0, pastOffset + PAST_PAGE_SIZE);
+    pastOffset = slice.length;
+
+    if (!slice.length) {
+      container.innerHTML = '<p style="font-size:13px;color:#5c7385;">No past events yet.</p>';
+      document.getElementById('loadMoreBtn').style.display = 'none';
+      return;
+    }
+
+    container.innerHTML = slice.map(evt => `
+      <div class="past-card">
+        <div class="info">
+          <strong>${evt.title}</strong>
+          ${evt.event_date} · ${evt.city || ''}
+        </div>
+        <button class="repeat-btn" onclick='repeatEvent(${JSON.stringify(evt).replace(/'/g, "&#39;")})'>Repeat</button>
+      </div>
+    `).join('');
+
+    document.getElementById('loadMoreBtn').style.display = past.length > slice.length ? 'block' : 'none';
+  } catch (err) {
+    // silent - archive is a convenience, not critical path
+  }
+}
+</script>
+
+</body>
+</html>
