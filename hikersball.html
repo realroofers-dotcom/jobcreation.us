@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hikers Ball — The Foundation for Job Creation</title>
+<meta name="description" content="Formal dances held across the country for hikers and the people who staff homeless shelters. Guests bring new undergarments as a donation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/" aria-label="The Foundation for Job Creation, JobCreation.us">
+      <img src="/logo-header.png" alt="The Foundation for Job Creation — JobCreation.us">
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav class="nav" id="nav">
+      <a href="/#mission">Mission</a>
+      <a href="/homelessness.html">Homelessness</a>
+      <a href="/rooferschool.html">RooferSchool</a>
+      <a href="/trailshrinks.html">TrailShrinks</a>
+      <a href="/hikersball.html" class="is-current">Hikers Ball</a>
+      <a href="/archive.html">Archive</a>
+      <a href="/#news">Jobs &amp; Growth</a>
+      <a href="/#contact" class="nav-give">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="page-head">
+  <div class="wrap">
+    <div class="kicker">A program of the Foundation</div>
+    <h1>The Hikers Ball</h1>
+    <p>Formal dances held across the country for hikers and the people who staff homeless shelters — the hardest job in this fight, and the one nobody throws a party for.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="prose">
+
+      <div class="pull">
+        <p>All guests are requested to bring new, clean undergarments for homeless people as a donation. Some people refer to The Hikers Ball as the Underwear Ball.</p>
+      </div>
+
+      <h2>Who it&rsquo;s for</h2>
+      <p>Shelter workers do the work almost nobody else will. They handle the overnight shifts, the overdoses, the intake at 2 a.m., the person who comes back for the fourth time. They are underpaid, they burn out, and they are thanked almost never. We welcome all shelter workers, but we need firm RSVPs — so watch for your area.</p>
+
+      <p>The Hikers Ball is a formal night held in their honor. Like a prom. Not a fundraiser dressed up as a party — a party, for them, with the room on their side.</p>
+
+      <p>However, donations and company sponsorships would be greatly appreciated. The homeless crisis hits all ages, and for many different reasons. If you are not homeless and never have been, count yourself as fortunate — we could always use your monetary help.</p>
+
+      <p>Admission is free, and a donation of new underwear goes directly to shelters. It is the single most requested item at intake and one of the least donated. Everyone remembers the price of admission, which is exactly the point.</p>
+
+      <h2>Across the country</h2>
+      <p>The Ball is meant to travel — held in different cities, honoring the shelter staff in each one. Dates and locations are announced as they are set.</p>
+
+      <h2>Part of the Foundation</h2>
+      <p>The Hikers Ball is a program of the Foundation for Job Creation. TheHikersBall.com is in development and will carry dates, venues, and how to attend or sponsor a night.</p>
+      <p>If you run a shelter and want the Ball brought to your city, or you want to sponsor one, call.</p>
+
+      <div class="btn-row">
+        <a class="btn btn-gold" href="tel:+17329953914">Call 732-995-3914</a>
+        <a class="btn btn-ghost" href="mailto:realroofers@gmail.com">Email the Foundation</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h4>The Foundation for Job Creation</h4>
+        <p style="margin:0">Ideas into impact.<br>Jobs into futures.<br>Est. 2009.</p>
+      </div>
+      <div>
+        <h4>Our work</h4>
+        <ul>
+          <li><a href="/homelessness.html">Homelessness research</a></li>
+          <li><a href="/rooferschool.html">RooferSchool</a></li>
+          <li><a href="/trailshrinks.html">TrailShrinks</a></li>
+          <li><a href="/hikersball.html">The Hikers Ball</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="tel:+17329953914">732-995-3914</a></li>
+          <li><a href="mailto:realroofers@gmail.com">realroofers@gmail.com</a></li>
+          <li>PO Box 589<br>Clifton, NJ 07012</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      The Foundation for Job Creation is a 501(c)(3) tax-exempt nonprofit organization. EIN 26-4542276. Contributions are tax-deductible to the extent permitted by law. This site is a work in progress and is updated as the work develops.
+      <br>&copy; <span id="year">2026</span> The Foundation for Job Creation.
+    </div>
+  </div>
+</footer>
+
+<script>
+  var toggle = document.getElementById("menuToggle");
+  var nav = document.getElementById("nav");
+  toggle.addEventListener("click", function () {
+    var open = nav.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>

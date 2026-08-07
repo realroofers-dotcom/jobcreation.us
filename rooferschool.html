@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RooferSchool — The Foundation for Job Creation</title>
+<meta name="description" content="Mobile roofing trade training that travels to the cities where the need is greatest — plus how to run the business and invest what you earn.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/" aria-label="The Foundation for Job Creation, JobCreation.us">
+      <img src="/logo-header.png" alt="The Foundation for Job Creation — JobCreation.us">
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav class="nav" id="nav">
+      <a href="/#mission">Mission</a>
+      <a href="/homelessness.html">Homelessness</a>
+      <a href="/rooferschool.html" class="is-current">RooferSchool</a>
+      <a href="/trailshrinks.html">TrailShrinks</a>
+      <a href="/hikersball.html">Hikers Ball</a>
+      <a href="/archive.html">Archive</a>
+      <a href="/#news">Jobs &amp; Growth</a>
+      <a href="/#contact" class="nav-give">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="page-head">
+  <div class="wrap">
+    <div class="kicker">A program of the Foundation</div>
+    <h1>RooferSchool</h1>
+    <p>Mobile trade training that goes where the need is. The trade first, then the business behind it.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="prose">
+      <h2>The trade</h2>
+      <p>Roofing is one of the few trades a person can enter without a degree, without a loan, and without a year of waiting — and still be earning a real wage inside a season. The work is hard and it is honest, and there is more of it than there are people willing to do it.</p>
+      <p>RooferSchool is mobile by design. Instead of asking people to travel to a campus, the training travels to them, and it targets urban areas deliberately — the places where the need for work is highest and the training options are thinnest.</p>
+
+      <h2>The part nobody teaches</h2>
+      <p>Learning to install a roof gets a person a job. Learning what happens to the money is what changes a life. So the training carries a second half:</p>
+      <ul>
+        <li>How to price a job so you don&rsquo;t lose money winning it</li>
+        <li>How to start and run a roofing or construction business of your own</li>
+        <li>How to research a stock and understand what you actually own</li>
+        <li>What to do with what you earn, so the work compounds into something</li>
+      </ul>
+
+      <div class="pull">
+        <p>This is the whole idea of the Foundation in one program: no handouts, just stimulated opportunity. A skill, then the knowledge to build on it.</p>
+      </div>
+
+      <h2>Where we&rsquo;ll be</h2>
+      <p>RooferSchool.com will carry the schedule of upcoming sessions — the city, the date, and where to show up. That site is in development.</p>
+      <p>If you want training brought to your city, or you run an organization that can host a session, call and say so. Locations are chosen by where the demand is loudest.</p>
+
+      <div class="btn-row">
+        <a class="btn btn-gold" href="tel:+17329953914">Call 732-995-3914</a>
+        <a class="btn btn-ghost" href="mailto:realroofers@gmail.com">Email the Foundation</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h4>The Foundation for Job Creation</h4>
+        <p style="margin:0">Ideas into impact.<br>Jobs into futures.<br>Est. 2009.</p>
+      </div>
+      <div>
+        <h4>Our work</h4>
+        <ul>
+          <li><a href="/homelessness.html">Homelessness research</a></li>
+          <li><a href="/rooferschool.html">RooferSchool</a></li>
+          <li><a href="/trailshrinks.html">TrailShrinks</a></li>
+          <li><a href="/hikersball.html">The Hikers Ball</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="tel:+17329953914">732-995-3914</a></li>
+          <li><a href="mailto:realroofers@gmail.com">realroofers@gmail.com</a></li>
+          <li>PO Box 589<br>Clifton, NJ 07012</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      The Foundation for Job Creation is a 501(c)(3) tax-exempt nonprofit organization. EIN 26-4542276. Contributions are tax-deductible to the extent permitted by law. This site is a work in progress and is updated as the work develops.
+      <br>&copy; <span id="year">2026</span> The Foundation for Job Creation.
+    </div>
+  </div>
+</footer>
+
+<script>
+  var toggle = document.getElementById("menuToggle");
+  var nav = document.getElementById("nav");
+  toggle.addEventListener("click", function () {
+    var open = nav.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
