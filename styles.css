@@ -342,3 +342,25 @@ section.tint { background: var(--panel); border-top: 1px solid var(--line); bord
 .found-fact .n { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 30px; color: var(--navy); line-height: 1; }
 .found-fact .t { font-size: 13.5px; color: var(--slate); margin-top: 8px; line-height: 1.5; }
 @media (max-width: 900px) { .found-grid { grid-template-columns: 1fr; gap: 30px; } }
+
+/* ---------- TrailShrinks logo + QR ---------- */
+
+.ts-logo-row { display: flex; gap: 34px; align-items: center; flex-wrap: wrap; margin-bottom: 34px; }
+.ts-scan { display: flex; align-items: center; gap: 16px; max-width: 420px; margin: 30px 0 6px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.ts-scan img { width: 112px; height: 112px; flex-shrink: 0; display: block; border: 1px solid var(--line); border-radius: 8px; padding: 6px; background: #fff; }
+.ts-scan p { font-size: 13.5px; color: var(--slate); line-height: 1.5; margin: 0; }
+.ts-scan strong { color: var(--navy); }
+@media (max-width: 700px) { .ts-logo-row { gap: 22px; } .ts-scan { max-width: none; } }
+
+/* ---------- brand assets ---------- */
+
+.assets { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 22px; }
+.asset { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+.asset-prev { background: #fff; padding: 22px; display: flex; align-items: center; justify-content: center; min-height: 150px; border-bottom: 1px solid var(--line); }
+.asset-prev.dark { background: var(--navy); }
+.asset-prev img { max-width: 100%; max-height: 130px; width: auto; height: auto; display: block; }
+.asset-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex: 1; }
+.asset-body h3 { font-size: 17px; margin-bottom: 8px; }
+.asset-body p { font-size: 14.5px; color: var(--slate); line-height: 1.55; margin: 0 0 14px; flex: 1; }
+.asset-meta { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--gray); margin-bottom: 14px; }
+.asset .btn { align-self: flex-start; padding: 10px 20px; font-size: 14px; }
