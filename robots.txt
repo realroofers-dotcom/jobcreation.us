@@ -1,0 +1,17 @@
+# The Foundation for Job Creation — jobcreation.us
+# A 501(c)(3) nonprofit. EIN 26-4542276. Everything here is public and free to index.
+
+User-agent: *
+Allow: /
+
+# Housekeeping files that aren't content
+Disallow: /schema-1.sql
+Disallow: /schema-2.sql
+Disallow: /schema-3.sql
+Disallow: /schema-4.sql
+Disallow: /schema-5.sql
+Disallow: /schema-6.sql
+Disallow: /admin.html
+Disallow: /add-event.html
+
+Sitemap: https://jobcreation.us/sitemap.xml
