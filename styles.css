@@ -166,8 +166,10 @@ section.tint { background: var(--panel); border-top: 1px solid var(--line); bord
 .card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(10,30,61,0.09); }
 .card-logo { height: 60px; margin-bottom: 14px; }
 .card-logo img { height: 100%; width: auto; display: block; }
+.card-logo.tall { height: 104px; }
 .page-logo { max-width: 340px; margin-bottom: 30px; }
 .page-logo img { width: 100%; height: auto; display: block; }
+.page-logo.tall { max-width: 260px; }
 .card .tag {
   font-size: 11px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase;
   color: var(--blue); margin-bottom: 10px;
