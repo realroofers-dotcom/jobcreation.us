@@ -1,4 +1,4 @@
-/* BUILT 2026-09-29 · jobcreation site-1a · Shared page script for the pages built from the 2026-09-29 layout:
+/* BUILT 2026-09-29 · jobcreation site-1b · Shared page script for the pages built from the 2026-09-29 layout:
    mobile menu, footer year, photo lightbox, the Jobs & Growth feed (news.html), and the Cars for Homes mail forms. */
 (function () {
   var toggle = document.getElementById("menuToggle");
@@ -73,17 +73,35 @@
       .catch(function () { list.innerHTML = '<div class="feed-empty">Headlines are unavailable right now.</div>'; });
   }
 
-  // Mail forms (Cars for Homes): open a pre-filled email to the Foundation. Nothing is stored on the site.
+  // Cars for Homes forms (site-1b): saved to the Foundation's database through /api/cars.
+  // If the database can't be reached, fall back to a pre-filled email so no sign-up is lost.
   Array.prototype.forEach.call(document.querySelectorAll("form.mailform"), function (f) {
     f.addEventListener("submit", function (e) {
       e.preventDefault();
-      var lines = [];
+      var data = { kind: f.dataset.kind }, lines = [];
       Array.prototype.forEach.call(f.elements, function (el) {
-        if (el.name) lines.push(el.name + ": " + el.value);
+        if (!el.name) return;
+        data[el.name] = el.value;
+        if (el.name !== "website") lines.push(el.name + ": " + el.value);
       });
-      lines.push("", "Sent from " + location.href + " on " + new Date().toLocaleString());
-      location.href = "mailto:realroofers@gmail.com?subject=" + encodeURIComponent(f.dataset.subject) +
-        "&body=" + encodeURIComponent(lines.join("\n"));
+      var btn = f.querySelector("button"), label = btn.textContent;
+      btn.disabled = true; btn.textContent = "Sending…";
+      var mail = function () {
+        lines.push("", "Sent from " + location.href + " on " + new Date().toLocaleString());
+        location.href = "mailto:realroofers@gmail.com?subject=" + encodeURIComponent(f.dataset.subject) +
+          "&body=" + encodeURIComponent(lines.join("\n"));
+      };
+      fetch("/api/cars", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); })
+        .then(function (res) {
+          if (res.ok) {
+            f.innerHTML = '<h3>Thank you</h3><p>We have your ' + (data.kind === "donor" ? "pledge" : "application") +
+              ' and will be in touch. Questions? Call <a href="tel:+17329953914">732-995-3914</a>.</p>';
+          } else if (res.status === 400 || res.status === 429) {
+            alert(res.d.error || "Please check the form."); btn.disabled = false; btn.textContent = label;
+          } else { mail(); btn.disabled = false; btn.textContent = label; }
+        })
+        .catch(function () { mail(); btn.disabled = false; btn.textContent = label; });
     });
   });
 })();

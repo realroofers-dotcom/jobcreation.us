@@ -88,6 +88,47 @@
 
 <a class="export" href="#" onclick="exportCsv(event)">Download full journal as CSV →</a>
 
+<!-- Added 2026-09-29 (admin-1b): Cars for Homes sign-ups from /api/cars. Uses the same admin password. -->
+<h1 style="margin-top:48px">Cars for Homes sign-ups</h1>
+<div class="row">
+  <div><select id="carKind"><option value="">All</option><option value="donor">Car donors</option><option value="applicant">Applicants</option></select></div>
+  <div><button style="margin-top:4px" onclick="loadCars()">Load sign-ups</button></div>
+</div>
+<div id="cars" style="font-size:14px"></div>
+
+<script>
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function loadCars() {
+  const pw = document.getElementById('password').value;
+  const kind = document.getElementById('carKind').value;
+  const el = document.getElementById('cars');
+  if (!pw) { el.innerHTML = '<div class="msg err">Enter the admin password at the top first.</div>'; return; }
+  const res = await fetch('/api/cars' + (kind ? '?kind=' + kind : ''), { headers: { 'x-admin-password': pw } });
+  const data = await res.json();
+  if (!res.ok) { el.innerHTML = `<div class="msg err">${esc(data.error)}</div>`; return; }
+  if (!data.items.length) { el.innerHTML = '<p>No sign-ups yet.</p>'; return; }
+  el.innerHTML = data.items.map(r => `
+    <div style="border:1px solid #c7d6de;border-radius:6px;padding:12px;margin-top:12px">
+      <b>${r.kind === 'donor' ? 'CAR DONOR' : 'APPLICANT'}</b> · ${esc(r.created_at.slice(0,16).replace('T',' '))} UTC · #${r.id}<br>
+      <b>${esc(r.name)}</b> · ${esc(r.contact)} · ${esc(r.location)}<br>
+      ${r.kind === 'donor'
+        ? `Car: ${esc(r.car)} · ${esc(r.mileage)} mi · runs: ${esc(r.runs)} · title: ${esc(r.title)}`
+        : `License: ${esc(r.license)} · DUI: ${esc(r.dui)} · insurance: ${esc(r.insurance)}<br>${esc(r.situation)}`}
+      <div class="row" style="margin-top:8px">
+        <div><select id="st${r.id}">${['new','contacted','matched','given','declined'].map(s => `<option${s === r.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+        <div><input id="nt${r.id}" value="${esc(r.notes)}" placeholder="Notes"></div>
+        <div><button style="margin-top:4px" onclick="saveCar(${r.id})">Save</button></div>
+      </div>
+    </div>`).join('');
+}
+async function saveCar(id) {
+  const pw = document.getElementById('password').value;
+  const res = await fetch('/api/cars', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+    body: JSON.stringify({ id, status: document.getElementById('st' + id).value, notes: document.getElementById('nt' + id).value }) });
+  alert(res.ok ? 'Saved' : 'Could not save');
+}
+</script>
+
 <script>
 function toggleFields() {
   const category = document.getElementById('category').value;

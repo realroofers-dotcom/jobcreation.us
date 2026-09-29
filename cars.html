@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-29 · jobcreation cars-1a · layout site-1a (shared nav, six efforts, Cars for Homes) -->
+<!-- BUILT 2026-09-29 · jobcreation cars-1b · layout site-1b (forms save to the database) (shared nav, six efforts, Cars for Homes) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,7 +108,8 @@
     </div>
 
     <div class="form-pair" id="forms">
-      <form class="mailform" id="donorForm" data-subject="Cars for Homes: car donation pledge">
+      <form class="mailform" id="donorForm" data-kind="donor" data-subject="Cars for Homes: car donation pledge">
+        <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
         <h3>Donate a car</h3>
         <label>Your name<input name="Name" required></label>
         <label>Phone or email<input name="Contact" required></label>
@@ -120,7 +121,8 @@
         <button class="btn btn-gold" type="submit">Send my pledge</button>
       </form>
 
-      <form class="mailform" id="applyForm" data-subject="Cars for Homes: application">
+      <form class="mailform" id="applyForm" data-kind="applicant" data-subject="Cars for Homes: application">
+        <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
         <h3>Apply for a car</h3>
         <label>Your name<input name="Name" required></label>
         <label>Phone or email<input name="Contact" required></label>
@@ -132,7 +134,7 @@
         <button class="btn btn-gold" type="submit">Send my application</button>
       </form>
     </div>
-    <p class="form-note">The forms open an email to the Foundation with your answers filled in. Please do not send license numbers, Social Security numbers or bank details. Prefer to talk? Call <a href="tel:+17329953914">732-995-3914</a>.</p>
+    <p class="form-note">Your answers go straight to the Foundation and are seen only by us. Please do not send license numbers, Social Security numbers or bank details. Prefer to talk? Call <a href="tel:+17329953914">732-995-3914</a>.</p>
   </div>
 </section>
 
@@ -176,6 +178,6 @@
   </div>
 </footer>
 
-<script src="/site.js?v=1a"></script>
+<script src="/site.js?v=1b"></script>
 </body>
 </html>
