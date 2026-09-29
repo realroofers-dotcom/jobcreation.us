@@ -366,3 +366,54 @@ section.tint { background: var(--panel); border-top: 1px solid var(--line); bord
 .asset-body p { font-size: 14.5px; color: var(--slate); line-height: 1.55; margin: 0 0 14px; flex: 1; }
 .asset-meta { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--gray); margin-bottom: 14px; }
 .asset .btn { align-self: flex-start; padding: 10px 20px; font-size: 14px; }
+
+/* ---------- 2026-09-29 layout (site-1a): six-card home, bands, founder page, market guide, Cars for Homes ---------- */
+
+a.card { text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+.cards.six { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 860px) { .cards.six { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .cards.six { grid-template-columns: 1fr; } }
+.card-new { border-top: 4px solid var(--gold); }
+
+.band { padding: 44px 0; }
+.band-gold { background: var(--gold); }
+.band-gold h2, .band-gold .kicker { color: var(--navy); }
+.band-gold .kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 8px; }
+.band-gold h2 { font-size: clamp(24px, 3vw, 34px); }
+.band-gold p { color: var(--navy); margin: 12px 0 0; max-width: 62ch; }
+.band-grid { display: grid; grid-template-columns: minmax(0,1.4fr) auto; gap: 30px; align-items: center; }
+.band-grid .btn-row { margin-top: 0; }
+@media (max-width: 860px) { .band-grid { grid-template-columns: 1fr; } }
+.btn-navy { background: var(--navy); color: var(--white); }
+.btn-navy:hover { background: var(--navy-soft); }
+
+.bio-grid { display: grid; grid-template-columns: 300px minmax(0,1fr); gap: 44px; align-items: start; }
+.bio-photo { margin: 0; position: sticky; top: 110px; }
+.bio-photo img { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--line); }
+.bio-photo figcaption { font-size: 13px; color: var(--slate); margin-top: 8px; text-align: center; }
+.bio-list { list-style: none; padding-left: 0 !important; }
+.bio-list li { padding: 10px 0; border-bottom: 1px solid var(--line); margin: 0 !important; }
+.bio-list b { color: var(--navy); }
+.sign { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 24px; color: var(--blue); }
+@media (max-width: 860px) { .bio-grid { grid-template-columns: 1fr; gap: 26px; } .bio-photo { position: static; max-width: 340px; } }
+
+ol.steps { padding-left: 0; list-style: none; counter-reset: step; margin: 0 0 22px; }
+ol.steps li { counter-increment: step; position: relative; padding: 4px 0 14px 50px; margin: 0; }
+ol.steps li::before { content: counter(step); position: absolute; left: 0; top: 2px; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--navy); color: var(--gold); font-family: 'Archivo', sans-serif; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+ol.steps b { color: var(--navy); }
+
+.link-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 0 0 22px; }
+.link-cards a { display: block; text-decoration: none; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 0 10px 10px 0; padding: 14px 16px; background: var(--paper); }
+.link-cards a:hover { border-color: var(--blue); }
+.link-cards b { display: block; color: var(--navy); font-family: 'Archivo', sans-serif; }
+.link-cards span { display: block; color: var(--slate); font-size: 14.5px; margin-top: 4px; line-height: 1.5; }
+
+.form-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 38px; }
+@media (max-width: 860px) { .form-pair { grid-template-columns: 1fr; } }
+.mailform { background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--gold); border-radius: 10px; padding: 24px; display: grid; gap: 12px; }
+.mailform h3 { font-size: 22px; margin-bottom: 4px; }
+.mailform label { display: grid; gap: 5px; font-size: 14px; font-weight: 600; color: var(--navy); }
+.mailform input, .mailform select, .mailform textarea { font: inherit; font-weight: 400; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); width: 100%; }
+.mailform button { margin-top: 6px; justify-self: start; border: 0; cursor: pointer; font: inherit; font-weight: 700; }
+.form-note { font-size: 14px; color: var(--slate); margin-top: 16px; max-width: 80ch; }
