@@ -89,6 +89,11 @@
 <a class="export" href="#" onclick="exportCsv(event)">Download full journal as CSV →</a>
 
 <!-- Added 2026-09-29 (admin-1b): Cars for Homeless sign-ups from /api/cars. Uses the same admin password. -->
+<h1 style="margin-top:48px">Cars for Homeless: ready for your check-off</h1>
+<p style="font-size:13px;color:#5c7385;">The system screens every application. Tap Approve to show the person to donors (first name, state and the story below), or Decline. Background check and drug test are done after a donor picks them, before the car is handed over.</p>
+<button onclick="loadQueue()">Show applications waiting for me</button>
+<div id="queue" style="font-size:14px"></div>
+
 <h1 style="margin-top:48px">Cars for Homeless sign-ups</h1>
 <div class="row">
   <div><select id="carKind"><option value="">All</option><option value="donor">Car donors</option><option value="applicant">Applicants</option></select></div>
@@ -122,7 +127,7 @@ async function loadCars() {
            <label>Story shown to donors when approved (first name + state are added automatically)</label>
            <textarea id="bl${r.id}" rows="2">${esc(r.public_blurb || '')}</textarea>`}
       <div class="row" style="margin-top:8px">
-        <div><select id="st${r.id}">${['new','contacted','approved','matched','given','declined'].map(s => `<option${s === r.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+        <div><select id="st${r.id}">${['new','screened','review','contacted','approved','matched','given','declined'].map(s => `<option${s === r.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
         <div><input id="nt${r.id}" value="${esc(r.notes)}" placeholder="Notes"></div>
         <div><button style="margin-top:4px" onclick="saveCar(${r.id})">Save</button></div>
       </div>
@@ -136,7 +141,39 @@ async function saveCar(id) {
       public_blurb: bl ? bl.value : null }) });
   alert(res.ok ? 'Saved' : 'Could not save');
 }
-// Status guide: new → contacted → approved (checks passed; shown to donors if they agreed) → matched → given, or declined.
+async function loadQueue() {
+  const pw = document.getElementById('password').value;
+  const el = document.getElementById('queue');
+  if (!pw) { el.innerHTML = '<div class="msg err">Enter the admin password at the top first.</div>'; return; }
+  const res = await fetch('/api/cars?queue=1', { headers: { 'x-admin-password': pw } });
+  const data = await res.json();
+  if (!res.ok) { el.innerHTML = `<div class="msg err">${esc(data.error)}</div>`; return; }
+  if (!data.items.length) { el.innerHTML = '<p>Nothing waiting. Nice.</p>'; return; }
+  el.innerHTML = data.items.map(r => {
+    let sc = {}; try { sc = JSON.parse(r.screen || '{}'); } catch (e) {}
+    const ok = !(sc.flags || []).length;
+    return `<div id="q${r.id}" style="border:2px solid ${ok ? '#1d7a3a' : '#c78a00'};border-radius:8px;padding:12px;margin-top:12px">
+      <b style="color:${ok ? '#1d7a3a' : '#9a6a00'}">${ok ? '✓ PASSED SCREENING' : '⚠ NEEDS A CLOSER LOOK'}</b> · #${r.id} · ${esc(r.created_at.slice(0,10))}<br>
+      ${(sc.flags || []).map(f => '• ' + esc(f)).join('<br>')}${ok ? '' : '<br>'}
+      <b>${esc(r.name)}</b>, ${esc(r.location)} · born ${esc(r.dob)} in ${esc(r.birth_state)} · ${esc(r.contact)}<br>
+      <b>${esc(r.reason_category)}:</b> ${esc(r.situation)}<br>
+      <label>Story donors will see (edit if you like)</label>
+      <textarea id="qb${r.id}" rows="3">${esc(r.public_blurb || '')}</textarea>
+      <button onclick="decide(${r.id},'approved')" style="background:#1d7a3a">Approve</button>
+      <button onclick="decide(${r.id},'declined')" style="background:#8a2a2a">Decline</button>
+    </div>`; }).join('');
+}
+async function decide(id, status) {
+  const pw = document.getElementById('password').value;
+  const res = await fetch('/api/cars', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+    body: JSON.stringify({ id, status, notes: status === 'approved' ? 'Checked off by Mark ' + new Date().toISOString().slice(0,10) : 'Declined by Mark ' + new Date().toISOString().slice(0,10),
+      public_blurb: document.getElementById('qb' + id).value }) });
+  const card = document.getElementById('q' + id);
+  if (res.ok) card.outerHTML = `<p style="margin-top:12px">#${id} ${status === 'approved' ? '✓ approved: now shown to donors' : 'declined'}.</p>`;
+  else alert('Could not save');
+}
+// Status guide: new → screened (passed) / review (flagged) → approved (Mark's check-off) → matched → given, or declined.
+// Older guide: new → contacted → approved (checks passed; shown to donors if they agreed) → matched → given, or declined.
 </script>
 
 <script>

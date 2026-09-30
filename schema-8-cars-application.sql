@@ -18,3 +18,6 @@ ALTER TABLE car_signups ADD COLUMN chosen_applicant_id INTEGER; -- donor: the ap
 CREATE TABLE IF NOT EXISTS car_photos ( id INTEGER PRIMARY KEY AUTOINCREMENT, signup_id INTEGER NOT NULL, created_at TEXT NOT NULL, mime TEXT NOT NULL, data TEXT NOT NULL );
 CREATE INDEX IF NOT EXISTS idx_car_photos_signup ON car_photos (signup_id);
 ALTER TABLE car_signups ADD COLUMN est_value REAL;           -- donor's estimated fair market value (private-party guide value)
+
+-- Added 2026-09-30: automatic screening result (JSON: result, flags, screened_at). Status 'screened' = passed, ready for Mark's check-off; 'review' = flagged.
+ALTER TABLE car_signups ADD COLUMN screen TEXT;

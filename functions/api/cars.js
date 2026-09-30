@@ -1,5 +1,7 @@
-// BUILT 2026-09-30 · jobcreation cars-api-2b · Cars for Homeless (carsforhomeless.com). 2b: donor car photo + estimated value.
-// The donor decides who receives the car: applicants apply, staff check them and set status "approved",
+// BUILT 2026-09-30 · jobcreation cars-api-2c · Cars for Homeless (carsforhomeless.com). 2c: automatic screening + draft donor story + email to Mark; 2b: donor car photo + estimated value.
+import { sendReceiptEmail } from "../lib/receipt.js";
+// The donor decides who receives the car: applicants apply, the system screens them (status "screened" or "review"),
+// Mark checks them off (status "approved"),
 // and approved applicants who agreed to share their story are shown to donors (first name, state, story only).
 //
 // POST  (public)            kind=applicant: full application (schema-8). kind=donor: car pledge + chosen applicant.
@@ -13,7 +15,7 @@ const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 
 const clip = (v, n) => (v == null ? "" : String(v)).trim().slice(0, n);
-const STATUSES = ["new", "contacted", "approved", "matched", "given", "declined"];
+const STATUSES = ["new", "screened", "review", "contacted", "approved", "matched", "given", "declined"];
 const REASONS = ["Job loss", "Eviction or rent increase", "Medical bills or illness", "Family breakup or domestic violence",
   "Fire, flood or disaster", "Car or housing repossessed", "Other"];
 // Never keep ID or bank numbers, even if someone types them in: 9+ digit runs are masked.
@@ -34,7 +36,8 @@ function age(dob) {
   return a;
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   if (!env.JOURNAL_DB) return json({ error: "Database not connected" }, 503);
   let b;
   try { b = await request.json(); } catch (e) { return json({ error: "Invalid request" }, 400); }
@@ -70,17 +73,46 @@ export async function onRequestPost({ request, env }) {
     if (!consents.background_check || !consents.drug_test || !consents.keep_insured_and_licensed || !consents.truthful)
       return json({ error: "You must agree to the background check, the drug test, keeping the car insured with a valid license, and that your answers are true." }, 400);
 
-    await env.JOURNAL_DB.prepare(
+    const situation = scrub(clip(b.Situation, 2000)), plan = scrub(clip(b.Plan, 2000)), needCar = scrub(clip(b.Need, 1500));
+
+    // Automatic screening. The hard rules (18+, license, no DUI, required agreements) are enforced above.
+    // Anything below only flags the application for a closer look; Mark gives the final check-off either way.
+    const flags = [];
+    if (clip(b.Insurance, 20) !== "Yes") flags.push("Cannot pay for insurance yet");
+    if (situation.length < 40 || plan.length < 40 || needCar.length < 25) flags.push("Very short answers");
+    if (!consents.share_story_with_donors) flags.push("Did not agree to show story to donors (donors cannot choose them)");
+    if (country && country !== "US") flags.push("Applied from outside the U.S. (" + country + ")");
+    if (years > 85) flags.push("Age over 85: confirm license");
+    const dup = await env.JOURNAL_DB.prepare(
+      "SELECT id FROM car_signups WHERE kind = 'applicant' AND ((lower(name) = lower(?) AND dob = ?) OR (? <> '' AND lower(email) = lower(?))) LIMIT 1"
+    ).bind(name, dob, email, email).first();
+    if (dup) flags.push("Possible duplicate of application #" + dup.id);
+    const status = flags.length ? "review" : "screened";
+    const screen = { result: flags.length ? "needs a closer look" : "passed", flags, screened_at: now };
+
+    // Draft of the story donors will see (first name and state are added on display). Mark can edit it in admin.
+    const firstSentences = (t, n) => (t.match(/[^.!?]+[.!?]*/g) || [t]).slice(0, n).join(" ").trim();
+    const blurb = scrub([firstSentences(needCar, 2), firstSentences(plan, 2)].filter(Boolean).join(" ")).slice(0, 500);
+
+    const ins = await env.JOURNAL_DB.prepare(
       `INSERT INTO car_signups (created_at, kind, name, contact, email, location, dob, birth_state, license, license_state, dui,
-         insurance, insurance_plan, reason_category, situation, plan_forward, need_car, consents, ip, country)
-       VALUES (?, 'applicant', ?, ?, ?, ?, ?, ?, 'Yes', ?, 'No', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         insurance, insurance_plan, reason_category, situation, plan_forward, need_car, consents, status, screen, public_blurb, ip, country)
+       VALUES (?, 'applicant', ?, ?, ?, ?, ?, ?, 'Yes', ?, 'No', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       now, name, contact, email || null, location, dob, clip(b["Birth state"], 60), clip(b["License state"], 40),
       clip(b.Insurance, 20), scrub(clip(b["Insurance plan"], 500)),
       REASONS.includes(b.Reason) ? b.Reason : "Other",
-      scrub(clip(b.Situation, 2000)), scrub(clip(b.Plan, 2000)), scrub(clip(b.Need, 1500)),
-      JSON.stringify(consents), ip, country
+      situation, plan, needCar, JSON.stringify(consents), status, JSON.stringify(screen), blurb, ip, country
     ).run();
+
+    // Tell Mark there is someone waiting for his check-off (needs RESEND_API_KEY; skipped quietly if not set).
+    if (env.RESEND_API_KEY) {
+      const id = ins.meta && ins.meta.last_row_id;
+      context.waitUntil(sendReceiptEmail(env, env.CARS_NOTIFY_EMAIL || "realroofers@gmail.com",
+        `Cars for Homeless: application #${id} ${flags.length ? "needs a closer look" : "passed screening"}`,
+        `${name}, ${location}\nReason: ${b.Reason}\nScreening: ${screen.result}${flags.length ? "\n- " + flags.join("\n- ") : ""}\n\n` +
+        `Check off at https://jobcreation.us/admin.html (Cars for Homeless → Ready for your check-off).`).catch(() => {}));
+    }
     return json({ ok: true });
   }
 
@@ -157,6 +189,13 @@ export async function onRequestGet({ request, env }) {
   }
 
   const kind = q.get("kind");
+  if (q.get("queue")) {
+    // Mark's check-off list: applications the system has screened, oldest first.
+    const { results } = await env.JOURNAL_DB.prepare(
+      "SELECT * FROM car_signups WHERE kind = 'applicant' AND status IN ('screened', 'review') ORDER BY status = 'review', created_at ASC LIMIT 200"
+    ).all();
+    return json({ items: results || [] });
+  }
   const stmt = kind === "donor" || kind === "applicant"
     ? env.JOURNAL_DB.prepare("SELECT * FROM car_signups WHERE kind = ? ORDER BY created_at DESC LIMIT 500").bind(kind)
     : env.JOURNAL_DB.prepare("SELECT * FROM car_signups ORDER BY created_at DESC LIMIT 500");
