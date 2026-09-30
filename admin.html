@@ -88,8 +88,8 @@
 
 <a class="export" href="#" onclick="exportCsv(event)">Download full journal as CSV →</a>
 
-<!-- Added 2026-09-29 (admin-1b): Cars for Homes sign-ups from /api/cars. Uses the same admin password. -->
-<h1 style="margin-top:48px">Cars for Homes sign-ups</h1>
+<!-- Added 2026-09-29 (admin-1b): Cars for Homeless sign-ups from /api/cars. Uses the same admin password. -->
+<h1 style="margin-top:48px">Cars for Homeless sign-ups</h1>
 <div class="row">
   <div><select id="carKind"><option value="">All</option><option value="donor">Car donors</option><option value="applicant">Applicants</option></select></div>
   <div><button style="margin-top:4px" onclick="loadCars()">Load sign-ups</button></div>
@@ -112,10 +112,17 @@ async function loadCars() {
       <b>${r.kind === 'donor' ? 'CAR DONOR' : 'APPLICANT'}</b> · ${esc(r.created_at.slice(0,16).replace('T',' '))} UTC · #${r.id}<br>
       <b>${esc(r.name)}</b> · ${esc(r.contact)} · ${esc(r.location)}<br>
       ${r.kind === 'donor'
-        ? `Car: ${esc(r.car)} · ${esc(r.mileage)} mi · runs: ${esc(r.runs)} · title: ${esc(r.title)}`
-        : `License: ${esc(r.license)} · DUI: ${esc(r.dui)} · insurance: ${esc(r.insurance)}<br>${esc(r.situation)}`}
+        ? `Car: ${esc(r.car)} · ${esc(r.mileage)} mi · runs: ${esc(r.runs)} · title: ${esc(r.title)} · donor's value: ${r.est_value ? '$' + Number(r.est_value).toLocaleString() : '—'}<br>
+           Chosen applicant: ${r.chosen_applicant_id ? '#' + r.chosen_applicant_id : 'Foundation to suggest'}<br>
+           <a href="/api/cars?photo=${r.id}&pw=${encodeURIComponent(pw)}" target="_blank">View car photo</a>`
+        : `Born ${esc(r.dob)} in ${esc(r.birth_state)} · License: ${esc(r.license)} (${esc(r.license_state)}) · DUI: ${esc(r.dui)} · can insure now: ${esc(r.insurance)}<br>
+           <b>Reason:</b> ${esc(r.reason_category)} — ${esc(r.situation)}<br>
+           <b>Plan forward:</b> ${esc(r.plan_forward)}<br><b>Why a car:</b> ${esc(r.need_car)}<br><b>Insurance plan:</b> ${esc(r.insurance_plan)}<br>
+           <b>Agreed:</b> ${(() => { try { const c = JSON.parse(r.consents || '{}'); return ['background_check','drug_test','keep_insured_and_licensed','share_story_with_donors','truthful'].map(k => (c[k] ? '✓ ' : '✗ ') + k.replace(/_/g,' ')).join(' · ') + (c.agreed_at ? ' · at ' + c.agreed_at : ''); } catch (e) { return '—'; } })()}<br>
+           <label>Story shown to donors when approved (first name + state are added automatically)</label>
+           <textarea id="bl${r.id}" rows="2">${esc(r.public_blurb || '')}</textarea>`}
       <div class="row" style="margin-top:8px">
-        <div><select id="st${r.id}">${['new','contacted','matched','given','declined'].map(s => `<option${s === r.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+        <div><select id="st${r.id}">${['new','contacted','approved','matched','given','declined'].map(s => `<option${s === r.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
         <div><input id="nt${r.id}" value="${esc(r.notes)}" placeholder="Notes"></div>
         <div><button style="margin-top:4px" onclick="saveCar(${r.id})">Save</button></div>
       </div>
@@ -123,10 +130,13 @@ async function loadCars() {
 }
 async function saveCar(id) {
   const pw = document.getElementById('password').value;
+  const bl = document.getElementById('bl' + id);
   const res = await fetch('/api/cars', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
-    body: JSON.stringify({ id, status: document.getElementById('st' + id).value, notes: document.getElementById('nt' + id).value }) });
+    body: JSON.stringify({ id, status: document.getElementById('st' + id).value, notes: document.getElementById('nt' + id).value,
+      public_blurb: bl ? bl.value : null }) });
   alert(res.ok ? 'Saved' : 'Could not save');
 }
+// Status guide: new → contacted → approved (checks passed; shown to donors if they agreed) → matched → given, or declined.
 </script>
 
 <script>

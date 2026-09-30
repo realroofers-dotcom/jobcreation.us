@@ -417,3 +417,23 @@ ol.steps b { color: var(--navy); }
 .mailform input, .mailform select, .mailform textarea { font: inherit; font-weight: 400; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); width: 100%; }
 .mailform button { margin-top: 6px; justify-self: start; border: 0; cursor: pointer; font: inherit; font-weight: 700; }
 .form-note { font-size: 14px; color: var(--slate); margin-top: 16px; max-width: 80ch; }
+
+/* ---------- 2026-09-30 Cars for Homeless (site-2a): applicants, samples, deduction, application checkboxes ---------- */
+.applicant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+.applicant-card { border: 1px solid var(--line); border-top: 4px solid var(--gold); border-radius: 10px; padding: 18px 20px; background: var(--paper); }
+.applicant-card h3 { font-size: 20px; margin-bottom: 4px; }
+.applicant-card .why { font-size: 13px; color: var(--blue); font-weight: 700; margin-bottom: 8px; }
+.applicant-card p { font-size: 15px; color: var(--slate); margin: 0 0 12px; }
+.applicant-card .checks { font-size: 13px; color: #1d7a3a; font-weight: 600; }
+.applicant-card.sample { border-style: dashed; background: var(--panel); }
+.sample-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; background: var(--navy); color: var(--gold); border-radius: 4px; padding: 3px 8px; margin-bottom: 10px; }
+.deduction { font-size: 15px; line-height: 1.6; background: #eef7ee; border-left: 4px solid #1d7a3a; border-radius: 0 8px 8px 0; color: var(--ink); }
+.deduction:not(:empty) { padding: 12px 14px; }
+.deduction-example { margin-top: 34px; border: 1px dashed var(--line); border-radius: 10px; padding: 20px 22px; background: var(--panel); }
+.deduction-example h3 { font-size: 19px; margin-bottom: 8px; }
+.deduction-example table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 10px 0; }
+.deduction-example th, .deduction-example td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.deduction-example th { font-size: 13px; color: var(--navy); }
+.mailform label.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; color: var(--ink); line-height: 1.5; }
+.mailform label.check input { width: auto; margin-top: 4px; flex: none; }
+@media (max-width: 620px) { .deduction-example table { font-size: 13px; } }
